@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAPTCHA Museum Rama Ken</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.1);
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        [data-high-contrast="true"] {
+            --bg-dark: #000000;
+            --bg-card: #000000;
+            --text-main: #ffffff;
+            --text-muted: #cccccc;
+            --primary: #ffff00;
+            --primary-hover: #cca300;
+            --success: #0df000;
+            --danger: #ff0000;
+            --border: #ffffff;
+            --shadow: none;
+        }
+
+        [data-high-contrast="true"] button {
+            border: 2px solid #ffffff !important;
+            background: transparent !important;
+            color: var(--primary) !important;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font);
+            line-height: 1.5;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.3s ease;
+        }
+
+        header.top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.8);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .toggle-lbl {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .toggle-switch {
+            width: 36px;
+            height: 20px;
+            background: var(--border);
+            border-radius: 10px;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        input[type="checkbox"]:checked+.toggle-switch {
+            background: var(--primary);
+        }
+
+        input[type="checkbox"]:checked+.toggle-switch::after {
+            transform: translateX(16px);
+        }
+
+        .btn {
+            appearance: none;
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-family: var(--font);
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn.btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn.btn-outline:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* Map View */
+        #map-view {
+            padding: 3rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: block;
+            animation: fade-in 0.3s ease;
+        }
+
+        .museum-intro {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .museum-intro h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .museum-intro p {
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1px));
+            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+
+        .level-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .level-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .level-card.completed {
+            border-color: var(--success);
+        }
+
+        .level-num {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .level-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .level-status-icon {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+        }
+
+        .completed-icon svg {
+            stroke: var(--success);
+        }
+
+        /* Level View */
+        #level-view {
+            display: none;
+            padding: 2rem;
+            min-height: calc(100vh - 80px);
+            animation: slide-up 0.3s ease;
+        }
+
+        .level-header {
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            color: var(--text-main);
+        }
+
+        .widget-wrapper {
+            max-width: 500px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+            box-sizing: border-box;
+            backdrop-filter: blur(20px);
+        }
+
+        .widget-body {
+            padding: 2rem;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .widget-status {
+            padding: 0.75rem 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .widget-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+        }
+
+        .widget-controls {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            width: 100%;
+        }
+
+        /* Generic UI Elements for Canvas/Puzzles */
+        canvas {
+            background: #fff;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            max-width: 100%;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-main);
+            font-size: 1rem;
+            text-align: center;
+            transition: border-color 0.2s;
+            font-family: monospace;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Specific Widgets */
+        /* Grid */
+        .grid-3x3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .grid-tile {
+            aspect-ratio: 1;
+            background: #fff;
+            border: 2px solid transparent;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            transition: transform 0.1s;
+        }
+
+        .grid-tile:hover {
+            filter: brightness(0.9);
+        }
+
+        .grid-tile.selected {
+            border-color: var(--primary);
+            transform: scale(0.95);
+            position: relative;
+        }
+
+        .grid-tile.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--primary);
+            color: #fff;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Slider */
+        .slider-track {
+            width: 100%;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            position: relative;
+            margin: 1rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .slider-thumb {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 50%;
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            cursor: grab;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            touch-action: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background 0.2s;
+        }
+
+        .slider-thumb:active {
+            cursor: grabbing;
+            background: var(--primary-hover);
+        }
+
+        /* Checkbox / Passive */
+        .cb-widget {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            transition: 0.2s;
+        }
+
+        .cb-widget:hover {
+            border-color: var(--text-muted);
+        }
+
+        .cb-box {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--text-muted);
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+        }
+
+        .cb-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        .cb-widget.loading .cb-box {
+            border-color: transparent;
+            background: transparent;
+        }
+
+        .cb-widget.loading .cb-box svg {
+            display: none;
+        }
+
+        .cb-widget.loading .cb-spinner {
+            display: block;
+        }
+
+        .cb-widget.passed .cb-box {
+            border-color: var(--success);
+            background: var(--success);
+        }
+
+        .cb-widget.passed .cb-box svg {
+            color: white;
+            display: block;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 3;
+        }
+
+        /* Seat Puzzle */
+        .seat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .seat {
+            background: #334155;
+            height: 60px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            border: 2px solid transparent;
+        }
+
+        .seat.active {
+            border-color: var(--primary);
+            background: #1e293b;
+            position: relative;
+        }
+
+        .seat.active::after {
+            content: '👤';
+            position: absolute;
+            font-size: 1.2rem;
+        }
+
+        .seat-tgt {
+            background: #0f172a;
+            border: 1px dashed var(--text-muted);
+        }
+
+        .arrow-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 40px);
+            gap: 5px;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .arrow-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+
+        .arrow-btn:hover {
+            background: var(--primary);
+        }
+
+        .arrow-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Rotate */
+        .rotate-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px dashed var(--border);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 1.5rem;
+            transition: transform 0.2s ease-out;
+            font-size: 4rem;
+            background: #fff;
+        }
+
+        /* Shape Match */
+        .shape-opts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .shape-opt {
+            background: #fff;
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60px;
+            font-size: 1.5rem;
+        }
+
+        .shape-opt:hover {
+            filter: brightness(0.9);
+        }
+
+        .shape-opt.selected {
+            border-color: var(--primary);
+        }
+
+        /* Token Modal */
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-box {
+            background: var(--bg-dark);
+            border: 1px solid var(--success);
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 1rem;
+
+            svg {
+                width: 32px;
+                height: 32px;
+                stroke-width: 2.5;
+            }
+        }
+
+        .token-box {
+            margin: 1.5rem 0;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 6px;
+            font-family: monospace;
+            color: var(--success);
+            font-size: 0.85rem;
+            word-break: break-all;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        /* Utilities */
+        .hide {
+            display: none !important;
+        }
+
+        .error-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        .hidden-field {
+            opacity: 0;
+            position: absolute;
+            z-index: -1;
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slide-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pop-in {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-5px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(5px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="top-bar">
+        <div class="logo">CAPTCHA<span>Museum</span></div>
+        <div class="controls">
+            <label class="toggle-lbl">
+                <input type="checkbox" id="dev-mode-cb" style="display:none;">
+                <div class="toggle-switch"></div>
+                Dev Mode
+            </label>
+            <label class="toggle-lbl">
+                <input type="checkbox" id="hc-mode-cb" style="display:none;">
+                <div class="toggle-switch"></div>
+                High Contrast
+            </label>
+            <button class="btn btn-outline" id="btn-reset"
+                style="padding: 0.2rem 0.5rem; font-size:0.8rem;">Reset</button>
+        </div>
+    </header>
+
+    <div id="app">
+        <!-- Map View -->
+        <main id="map-view">
+            <div class="museum-intro">
+                <h1>Welcome to the Evaluation Hall</h1>
+                <p>A curated collection of human verification techniques. Pass each level to proceed. (Local demo only).
+                </p>
+            </div>
+            <div class="grid" id="level-grid">
+                <!-- Rendered via JS -->
+            </div>
+        </main>
+
+        <!-- Level View -->
+        <main id="level-view">
+            <div class="level-header">
+                <a href="#" class="back-btn" id="btn-back">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Map
+                </a>
+                <h2 id="lvl-title">Level N: Name</h2>
+                <div style="width:70px"></div>
+            </div>
+
+            <div class="widget-wrapper" id="widget-wrapper">
+                <div class="widget-body" id="widget-body">
+                    <div class="widget-title" id="widget-prompt">Prompt text</div>
+                    <div id="widget-content"></div>
+                    <div class="widget-controls" id="widget-controls">
+                        <!-- Buttons injected here -->
+                    </div>
+                </div>
+                <div class="widget-status">
+                    <span id="opt-timer"></span>
+                    <span id="opt-attempts">Attempts: 3</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <h3>Verification Passed</h3>
+            <div class="token-box" id="token-disp">token_xxx</div>
+            <button class="btn" id="btn-next-level" style="width: 100%;">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // STATE & STORAGE
+        // ==========================================
+        const STORE_KEY = 'captchaMuseumProgress';
+        const DEV_KEY = 'captchaMuseumDevMode';
+        const HC_KEY = 'captchaMuseumHighContrast';
+
+        let state = {
+            completed: [],  // Array of passed level IDs
+            currentLevel: null,
+            attempts: 3,
+            levelStartMs: 0
+        };
+        let devMode = false;
+        let hcMode = false;
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORE_KEY);
+                if (saved) Object.assign(state, JSON.parse(saved));
+                delete state.unlockedMax; // clean up old state
+                devMode = localStorage.getItem(DEV_KEY) === 'true';
+                hcMode = localStorage.getItem(HC_KEY) === 'true';
+            } catch (e) { }
+            document.getElementById('dev-mode-cb').checked = devMode;
+            document.getElementById('hc-mode-cb').checked = hcMode;
+            toggleHighContrast(hcMode);
+        }
+        function saveState() {
+            localStorage.setItem(STORE_KEY, JSON.stringify(state));
+            localStorage.setItem(DEV_KEY, devMode);
+            localStorage.setItem(HC_KEY, hcMode);
+        }
+        function resetState() {
+            state.completed = [];
+            saveState();
+            if (state.currentLevel) openMap();
+            else renderMap();
+        }
+
+        // ==========================================
+        // UTILITIES
+        // ==========================================
+        const $ = id => document.getElementById(id);
+        const $$ = (tag, clss = '') => { let e = document.createElement(tag); if (clss) e.className = clss; return e; };
+        const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const randArr = arr => arr[randInt(0, arr.length - 1)];
+        const shuffle = arr => arr.sort(() => 0.5 - Math.random());
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const generateToken = (lId) => btoa(`${lId}_${Date.now()}_PASS_${randInt(1000, 9999)}`);
+
+        // Emojis as default icons
+        const ICONS = ['🍎', '🍌', '🚗', '🚲', '🚦', '☂️', '⚽', '🎸', '📱', '💻', '🔑', '🏠', '✈️', '🚢', '🚀'];
+
+        // ==========================================
+        // UI LOGIC
+        // ==========================================
+        document.getElementById('dev-mode-cb').addEventListener('change', e => { devMode = e.target.checked; saveState(); renderMap(); });
+        document.getElementById('hc-mode-cb').addEventListener('change', e => { hcMode = e.target.checked; saveState(); toggleHighContrast(hcMode); });
+        $('btn-reset').addEventListener('click', resetState);
+        $('btn-back').addEventListener('click', e => { e.preventDefault(); openMap(); });
+        $('btn-next-level').addEventListener('click', () => {
+            $('modal-overlay').style.display = 'none';
+            let next = state.currentLevel + 1;
+            if (next <= LEVELS.length) openLevel(next); else openMap();
+        });
+
+        function toggleHighContrast(on) {
+            document.documentElement.setAttribute('data-high-contrast', on ? 'true' : 'false');
+        }
+
+
+        function getIcon(levelName) {
+            const icons = {
+                'Distorted Text': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>',
+                'Image Grid': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>',
+                'Single Image Click': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>',
+                'Challenge-Gated Checkbox': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>',
+                'Audio Digits': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>',
+                'Math / Logic': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><line x1="16" y1="10" x2="16" y2="10"></line><line x1="8" y1="10" x2="8" y2="10"></line><line x1="8" y1="14" x2="8" y2="14"></line><line x1="8" y1="18" x2="8" y2="18"></line><line x1="12" y1="10" x2="12" y2="10"></line><line x1="12" y1="14" x2="12" y2="14"></line><line x1="12" y1="18" x2="12" y2="18"></line></svg>',
+                'Jigsaw Slider': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.611c-.946.946-2.463.946-3.409 0L8.73 19.73a.98.98 0 0 1-.276-.837c.07-.47.48-.802.925-.968a2.501 2.501 0 1 0-3.214-3.214c-.166-.446-.497-.855-.968-.925a.979.979 0 0 1-.837-.276L2.749 11.9a2.41 2.41 0 0 1 0-3.409l1.568-1.568a.98.98 0 0 1 .878-.289c.49.106.84.58.986 1.054a2.5 2.5 0 1 0 3.364-3.364c-.474-.146-.948-.496-1.054-.986a.98.98 0 0 1 .289-.878l1.568-1.568c.946-.946 2.463-.946 3.409 0l1.568 1.568a.98.98 0 0 1 .289.878c-.106.49-.58.84-1.054 1.986a2.5 2.5 0 1 0 3.364 3.364c.146.474.496.948.986 1.054z"></path></svg>',
+                'Rotate to Upright': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21.5 2 21.5 7 16.5 7"></polyline><polyline points="2.5 22 2.5 17 7.5 17"></polyline><path d="M2 12c0-5.5 4.5-10 10-10 4.2 0 7.8 2.6 9.3 6.3"></path><path d="M22 12c0 5.5-4.5 10-10 10-4.2 0-7.8-2.6-9.3-6.3"></path></svg>',
+                'Shape Matching': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2" ry="2"></rect><circle cx="16.5" cy="7.5" r="4.5"></circle><line x1="3" y1="21" x2="11" y2="13"></line><line x1="11" y1="21" x2="3" y2="13"></line><path d="M15 21l3-6 3 6z"></path></svg>',
+                'Gamified Puzzle': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>',
+                'Behavioral Biometrics': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path><path d="M13 13l6 6"></path></svg>',
+                'Escalation Ladder': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>'
+            };
+            return icons[levelName] || '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>';
+        }
+
+        function renderMap() {
+            const grid = $('level-grid');
+            grid.innerHTML = '';
+            LEVELS.forEach(lvl => {
+                const isCompleted = state.completed.includes(lvl.id);
+
+                const card = $$('div', `level-card ${isCompleted ? 'completed' : ''}`);
+
+                let iconHTML = '';
+                if (isCompleted) {
+                    iconHTML = `<div class="level-status-icon completed-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg></div>`;
+                }
+
+                let typeIconHTML = `<div class="level-type-icon" style="position: absolute; top: 1.5rem; right: ${isCompleted ? '3.5rem' : '1.5rem'}; opacity: 0.3; color: var(--text-main); pointer-events: none; transition: right 0.3s;">${getIcon(lvl.name)}</div>`;
+
+                card.innerHTML = `
+        ${iconHTML}
+        ${typeIconHTML}
+        <div class="level-num">Level ${lvl.id}</div>
+        <div class="level-name">${lvl.name}</div>
+        <div style="font-size:0.8rem; color:var(--text-muted)">${lvl.desc}</div>
+      `;
+                card.addEventListener('click', () => openLevel(lvl.id));
+                grid.appendChild(card);
+            });
+        }
+
+        function openMap() {
+            $('level-view').style.display = 'none';
+            $('map-view').style.display = 'block';
+            state.currentLevel = null;
+            renderMap();
+        }
+
+        function openLevel(id) {
+            const lvl = LEVELS.find(l => l.id === id);
+            if (!lvl) return;
+            state.currentLevel = id;
+            state.attempts = lvl.attempts || 3;
+            state.levelStartMs = Date.now();
+
+            $('map-view').style.display = 'none';
+            $('level-view').style.display = 'block';
+            $('lvl-title').innerText = `Level ${id}: ${lvl.name}`;
+            $('widget-prompt').innerText = lvl.prompt;
+            $('widget-content').innerHTML = '';
+            $('widget-controls').innerHTML = '';
+            updateStatusLine();
+
+            // Inject standard buttons
+            if (lvl.needsVerifyBtn !== false) {
+                let vb = $$('button', 'btn'); vb.innerText = 'Verify';
+                vb.onclick = () => window.activeLvlVerify();
+                $('widget-controls').appendChild(vb);
+            }
+            if (lvl.needsRefreshBtn !== false) {
+                let rb = $$('button', 'btn btn-outline');
+                rb.innerHTML = `<svg width="16" height="16" style="vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-9.14l4.31 4.31"/></svg>`;
+                rb.title = "Refresh";
+                rb.onclick = () => window.activeLvlRefresh();
+                $('widget-controls').appendChild(rb);
+            }
+
+            if (devMode) {
+                let db = $$('button', 'btn btn-outline'); db.innerText = 'Pass (Dev)';
+                db.style.borderColor = 'var(--success)'; db.style.color = 'var(--success)';
+                db.onclick = () => handlePass();
+                $('widget-controls').appendChild(db);
+            }
+
+            lvl.setup($('widget-content'));
+            window.activeLvlVerify = lvl.verify;
+            window.activeLvlRefresh = () => {
+                // Re-setup without losing an attempt if user explicitly clicked refresh
+                $('widget-content').innerHTML = '';
+                lvl.setup($('widget-content'));
+            };
+        }
+
+        function updateStatusLine() {
+            $('opt-attempts').innerText = `Attempts: ${state.attempts}`;
+            $('opt-timer').innerText = ''; // Can be expanded
+        }
+
+        function triggerFail(reinit = true) {
+            const w = $('widget-wrapper');
+            w.classList.add('error-shake');
+            setTimeout(() => w.classList.remove('error-shake'), 400);
+
+            state.attempts--;
+            if (state.attempts <= 0) {
+                // Auto refresh
+                state.attempts = LEVELS.find(l => l.id === state.currentLevel).attempts || 3;
+                if (reinit) {
+                    $('widget-content').innerHTML = '';
+                    LEVELS.find(l => l.id === state.currentLevel).setup($('widget-content'));
+                }
+            }
+            updateStatusLine();
+        }
+
+        async function handlePass() {
+            if (!state.completed.includes(state.currentLevel)) {
+                state.completed.push(state.currentLevel);
+            }
+            saveState();
+
+            // Show Modal
+            const token = generateToken(state.currentLevel);
+            $('token-disp').innerText = token;
+
+            await wait(300); // Visual pause
+            $('modal-overlay').style.display = 'flex';
+        }
+
+        // ==========================================
+        // LEVEL DEFINITIONS
+        // ==========================================
+        let activeChallenge = {}; // Temporary state for active level
+
+        const LEVELS = [
+            {
+                id: 1, name: 'Distorted Text', desc: 'Classic OCR', prompt: 'Type the characters below',
+                attempts: 3,
+                setup: (container) => {
+                    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // No ambiguous I/1/O/0
+                    let sol = Array.from({ length: 5 }).map(() => chars.charAt(randInt(0, chars.length - 1))).join('');
+                    activeChallenge.solution = sol;
+
+                    let cvs = $$('canvas'); cvs.width = 240; cvs.height = 80;
+                    let ctx = cvs.getContext('2d');
+                    ctx.fillStyle = hcMode ? '#fff' : '#e2e8f0'; ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+                    // noise lines
+                    if (!hcMode) {
+                        for (let i = 0; i < 6; i++) {
+                            ctx.beginPath(); ctx.moveTo(randInt(0, 240), randInt(0, 80));
+                            ctx.bezierCurveTo(randInt(0, 240), randInt(0, 80), randInt(0, 240), randInt(0, 80), randInt(0, 240), randInt(0, 80));
+                            ctx.strokeStyle = `rgba(0,0,0,0.${randInt(1, 3)})`; ctx.lineWidth = randInt(1, 3); ctx.stroke();
+                        }
+                    }
+
+                    // text
+                    ctx.font = 'bold 36px monospace';
+                    ctx.fillStyle = '#0f172a';
+                    ctx.textBaseline = 'middle';
+                    for (let i = 0; i < 5; i++) {
+                        ctx.save();
+                        ctx.translate(30 + i * 40, 40);
+                        ctx.rotate((randInt(-20, 20) * Math.PI) / 180);
+                        ctx.fillText(sol[i], -10, 0);
+                        ctx.restore();
+                    }
+
+                    let inp = $$('input'); inp.type = 'text'; inp.id = 'l1-input'; inp.placeholder = 'Enter text...';
+                    container.appendChild(cvs); container.appendChild($$('br')); container.appendChild(inp);
+                    inp.focus();
+                },
+                verify: () => {
+                    const val = $('l1-input').value.trim().toUpperCase();
+                    if (val === activeChallenge.solution) handlePass(); else triggerFail();
+                }
+            },
+            {
+                id: 2, name: 'Image Grid', desc: 'Select matching tiles', prompt: 'Select all containing: Traffic Lights',
+                attempts: 3,
+                setup: (container) => {
+                    const targetIcon = '🚦';
+                    const decoyIcons = ['🚗', '🚲', '🏢', '🌳', '🛑'];
+                    $('widget-prompt').innerHTML = `Select all tiles containing: <strong>Traffic Light</strong>`;
+
+                    // Ensure 3 to 5 targets
+                    let numTargets = randInt(3, 5);
+                    let items = Array(numTargets).fill(true).concat(Array(9 - numTargets).fill(false));
+                    shuffle(items);
+                    activeChallenge.truth = items;
+
+                    let grid = $$('div', 'grid-3x3');
+                    items.forEach((isTgt, i) => {
+                        let tile = $$('div', 'grid-tile');
+                        tile.innerText = isTgt ? targetIcon : randArr(decoyIcons);
+                        tile.onclick = () => tile.classList.toggle('selected');
+                        tile.dataset.idx = i;
+                        grid.appendChild(tile);
+                    });
+                    container.appendChild(grid);
+                },
+                verify: () => {
+                    let tiles = $('widget-content').querySelectorAll('.grid-tile');
+                    let pass = true;
+                    tiles.forEach(t => {
+                        let isSel = t.classList.contains('selected');
+                        let isTgt = activeChallenge.truth[parseInt(t.dataset.idx)];
+                        if (isSel !== isTgt) pass = false;
+                    });
+                    if (pass) handlePass(); else triggerFail();
+                }
+            },
+            {
+                id: 3, name: 'Single Image Click', desc: 'Identify object area', prompt: 'Click the Sun',
+                attempts: 3,
+                setup: (container) => {
+                    let cvs = $$('canvas'); cvs.width = 300; cvs.height = 200;
+                    let ctx = cvs.getContext('2d');
+
+                    // draw scene (House and Sun)
+                    ctx.fillStyle = '#87CEEB'; ctx.fillRect(0, 0, 300, 200); // sky
+                    ctx.fillStyle = '#228B22'; ctx.fillRect(0, 150, 300, 50); // ground
+
+                    // house
+                    ctx.fillStyle = '#D2B48C'; ctx.fillRect(50, 100, 60, 50);
+                    ctx.fillStyle = '#8B4513'; ctx.beginPath(); ctx.moveTo(40, 100); ctx.lineTo(80, 60); ctx.lineTo(120, 100); ctx.fill();
+
+                    // sun (target)
+                    const sunX = 220, sunY = 50, sunR = 25;
+                    ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2); ctx.fill();
+                    activeChallenge.target = { x: sunX, y: sunY, r: sunR + 15 }; // target with tolerance
+
+                    cvs.style.cursor = 'crosshair';
+                    cvs.onclick = (e) => {
+                        const rect = cvs.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        // check distance
+                        const dist = Math.hypot(x - activeChallenge.target.x, y - activeChallenge.target.y);
+                        if (dist <= activeChallenge.target.r) handlePass(); else triggerFail();
+                    };
+
+                    container.appendChild(cvs);
+                },
+                needsVerifyBtn: false
+            },
+            {
+                id: 4, name: 'Challenge-Gated Checkbox', desc: '"I am human"', prompt: 'Confirm you are a human',
+                needsVerifyBtn: false, needsRefreshBtn: false,
+                setup: (container) => {
+                    let w = $$('div', 'cb-widget');
+                    w.innerHTML = `
+          <div class="cb-box">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <div class="cb-spinner"></div>
+          </div>
+          <span style="user-select:none">I am not a robot</span>
+        `;
+                    let clicked = false;
+                    w.onclick = async () => {
+                        if (clicked) return; clicked = true;
+                        w.classList.add('loading');
+                        await wait(1000); // risk check simulation
+                        w.classList.remove('loading');
+                        w.classList.add('passed');
+                        await wait(300);
+                        handlePass();
+                    };
+                    container.appendChild(w);
+                }
+            },
+            {
+                id: 5, name: 'Audio Digits', desc: 'Accessibility focus', prompt: 'Listen to the beeps. How many did you hear?',
+                setup: (container) => {
+                    let count = randInt(3, 7);
+                    activeChallenge.ans = count.toString();
+                    let b = $$('button', 'btn');
+                    b.innerHTML = '🔊 Play Audio';
+
+                    let ctx = null;
+                    b.onclick = async () => {
+                        if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        b.disabled = true;
+                        for (let i = 0; i < count; i++) {
+                            let osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.value = 440;
+                            osc.connect(ctx.destination);
+                            osc.start(); setTimeout(() => osc.stop(), 150);
+                            await wait(400);
+                        }
+                        b.disabled = false;
+                    };
+
+                    let inp = $$('input'); inp.type = 'number'; inp.id = 'a-inp'; inp.style.marginTop = '1rem'; inp.placeholder = 'Enter number...';
+                    container.appendChild(b); container.appendChild(inp);
+                },
+                verify: () => {
+                    if ($('a-inp').value === activeChallenge.ans) handlePass(); else triggerFail();
+                }
+            },
+            {
+                id: 6, name: 'Math / Logic', desc: 'Simple questions', prompt: '',
+                setup: (container) => {
+                    let a = randInt(2, 15), b = randInt(1, 9);
+                    let op = randInt(0, 1); // 0=+, 1=-
+                    if (op === 1 && a < b) { let t = a; a = b; b = t; }
+                    activeChallenge.ans = (op === 0 ? a + b : a - b).toString();
+
+                    $('widget-prompt').innerText = `What is ${a} ${op === 0 ? '+' : '-'} ${b}?`;
+                    let inp = $$('input'); inp.type = 'number'; inp.id = 'm-inp'; inp.placeholder = 'Answer...';
+                    container.appendChild(inp);
+                    inp.focus();
+                },
+                verify: () => {
+                    if ($('m-inp').value === activeChallenge.ans) handlePass(); else triggerFail();
+                }
+            },
+            {
+                id: 7, name: 'Jigsaw Slider', desc: 'Align the piece', prompt: 'Slide piece into place',
+                needsVerifyBtn: false,
+                setup: (container) => {
+                    let cw = 280, ch = 150;
+                    let cvsBg = $$('canvas'); cvsBg.width = cw; cvsBg.height = ch;
+                    let ctx = cvsBg.getContext('2d');
+
+                    // bg texture
+                    ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 0, cw, ch);
+                    ctx.fillStyle = '#334155'; ctx.fillRect(0, 75, cw, 75);
+                    ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.moveTo(50, 75); ctx.lineTo(100, 20); ctx.lineTo(140, 75); ctx.fill(); // mountain
+
+                    // piece geometry
+                    let px = 40, py = 40; // piece size
+                    let tgtX = randInt(100, Number(cw) - 60);
+                    let tgtY = 50;
+
+                    // draw hole
+                    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                    ctx.fillRect(tgtX, tgtY, px, py);
+
+                    // create piece container
+                    let wrap = $$('div'); wrap.style.position = 'relative'; wrap.style.marginBottom = '10px';
+                    wrap.appendChild(cvsBg);
+
+                    let pce = $$('div');
+                    pce.style.cssText = `position:absolute; top:${tgtY}px; left:0px; width:${px}px; height:${py}px; background:#fff; box-shadow:0 0 5px #000; border: 1px solid var(--primary);`;
+                    // copy bg context into piece
+                    pce.innerHTML = `<div style="overflow:hidden; width:100%; height:100%; position:relative;"><canvas width="${cw}" height="${ch}" style="position:absolute; top:-${tgtY}px; left:-${tgtX}px; pointer-events:none; border:none; margin:0; border-radius:0"></canvas></div>`;
+
+                    let pctx = pce.querySelector('canvas').getContext('2d');
+                    pctx.fillStyle = '#1e293b'; pctx.fillRect(0, 0, cw, ch);
+                    pctx.fillStyle = '#334155'; pctx.fillRect(0, 75, cw, 75);
+                    pctx.fillStyle = '#0f172a'; pctx.beginPath(); pctx.moveTo(50, 75); pctx.lineTo(100, 20); pctx.lineTo(140, 75); pctx.fill();
+
+                    wrap.appendChild(pce);
+                    container.appendChild(wrap);
+
+                    // slider
+                    let track = $$('div', 'slider-track');
+                    let thumb = $$('div', 'slider-thumb'); thumb.innerHTML = '↔';
+                    track.appendChild(thumb);
+                    container.appendChild(track);
+
+                    let isDragging = false, startX = 0, pStart = 0;
+                    thumb.onpointerdown = e => { isDragging = true; startX = e.clientX; pStart = parseFloat(pce.style.left) || 0; thumb.setPointerCapture(e.pointerId); };
+                    thumb.onpointermove = e => {
+                        if (!isDragging) return;
+                        let moved = e.clientX - startX;
+                        let nx = pStart + moved;
+                        nx = Math.max(0, Math.min(nx, cw - px));
+                        pce.style.left = `${nx}px`;
+                        thumb.style.transform = `translateX(${(nx / (cw - px)) * (track.clientWidth - 40)}px)`;
+                    };
+                    thumb.onpointerup = e => {
+                        if (!isDragging) return;
+                        isDragging = false;
+                        let currX = parseFloat(pce.style.left) || 0;
+                        if (Math.abs(currX - tgtX) < 10) {
+                            pce.style.borderColor = 'var(--success)';
+                            setTimeout(handlePass, 300);
+                        } else {
+                            pce.style.left = '0px'; thumb.style.transform = 'translateX(0)'; triggerFail(false);
+                        }
+                        thumb.releasePointerCapture(e.pointerId);
+                    };
+                }
+            },
+            {
+                id: 8, name: 'Rotate to Upright', desc: 'Fix rotation', prompt: 'Rotate the image to be upright',
+                setup: (container) => {
+                    let angle = randInt(1, 11) * 30; // Random initial rotation, avoiding 0/360
+                    activeChallenge.angle = angle;
+
+                    let circ = $$('div', 'rotate-circle');
+                    circ.innerHTML = '☂️';
+                    circ.style.transform = `rotate(${angle}deg)`;
+                    container.appendChild(circ);
+
+                    let btns = $$('div'); btns.style.display = 'flex'; btns.style.gap = '10px'; btns.style.justifyContent = 'center';
+                    let bl = $$('button', 'btn header-btn'); bl.innerText = '↺ Left'; bl.onclick = () => { activeChallenge.angle -= 30; circ.style.transform = `rotate(${activeChallenge.angle}deg)`; }
+                    let br = $$('button', 'btn header-btn'); br.innerText = 'Right ↻'; br.onclick = () => { activeChallenge.angle += 30; circ.style.transform = `rotate(${activeChallenge.angle}deg)`; }
+                    btns.appendChild(bl); btns.appendChild(br);
+                    container.appendChild(btns);
+                },
+                verify: () => {
+                    let r = activeChallenge.angle % 360;
+                    if (r < 0) r += 360;
+                    if (r === 0) handlePass(); else triggerFail(false);
+                }
+            },
+            {
+                id: 9, name: 'Shape Matching', desc: 'Find identical', prompt: 'Select the exact match',
+                setup: (container) => {
+                    let items = shuffle([...ICONS]).slice(0, 5); // 5 decoys
+                    let tgt = items[0]; // first is target
+                    let opts = shuffle([...items, tgt]); // 6 options, 1 true match
+                    activeChallenge.tgt = tgt;
+
+                    $('widget-prompt').innerHTML = `Select: <span style="font-size:2rem; vertical-align:middle; margin-left:10px">${tgt}</span>`;
+                    let grid = $$('div', 'shape-opts');
+                    opts.forEach((o) => {
+                        let div = $$('div', 'shape-opt'); div.innerText = o;
+                        div.onclick = () => {
+                            Array.from(grid.children).forEach(c => c.classList.remove('selected'));
+                            div.classList.add('selected');
+                            activeChallenge.selected = o;
+                        };
+                        grid.appendChild(div);
+                    });
+                    container.appendChild(grid);
+                },
+                verify: () => {
+                    if (activeChallenge.selected === activeChallenge.tgt) handlePass(); else triggerFail(false);
+                }
+            },
+            {
+                id: 10, name: 'Gamified Puzzle', desc: 'Move to target', prompt: 'Move 👤 to seat: ',
+                setup: (container) => {
+                    let targetIdx = randInt(1, 8); // avoid 0 (start)
+                    activeChallenge.tgt = targetIdx;
+                    activeChallenge.curr = 0;
+
+                    $('widget-prompt').innerHTML = `Move 👤 to seat: <strong>#${targetIdx + 1}</strong>`;
+
+                    let g = $$('div', 'seat-grid');
+                    for (let i = 0; i < 9; i++) {
+                        let s = $$('div', 'seat');
+                        s.id = 'seat-' + i;
+                        s.innerText = (i + 1);
+                        if (i === targetIdx) s.classList.add('seat-tgt');
+                        if (i === 0) s.classList.add('active');
+                        g.appendChild(s);
+                    }
+                    container.appendChild(g);
+
+                    let updatePos = (d) => {
+                        let r = Math.floor(activeChallenge.curr / 3), c = activeChallenge.curr % 3;
+                        if (d === 'U') r = Math.max(0, r - 1);
+                        if (d === 'D') r = Math.min(2, r + 1);
+                        if (d === 'L') c = Math.max(0, c - 1);
+                        if (d === 'R') c = Math.min(2, c + 1);
+                        let nx = r * 3 + c;
+                        $('seat-' + activeChallenge.curr).classList.remove('active');
+                        activeChallenge.curr = nx;
+                        $('seat-' + nx).classList.add('active');
+                    };
+
+                    let ctrl = $$('div', 'arrow-controls');
+                    const addB = (icon, d) => { let b = $$('button', 'arrow-btn'); b.innerText = icon; b.onclick = () => updatePos(d); return b; };
+                    ctrl.appendChild($$('div')); ctrl.appendChild(addB('↑', 'U')); ctrl.appendChild($$('div'));
+                    ctrl.appendChild(addB('←', 'L')); ctrl.appendChild(addB('↓', 'D')); ctrl.appendChild(addB('→', 'R'));
+                    container.appendChild(ctrl);
+                },
+                verify: () => {
+                    if (activeChallenge.curr === activeChallenge.tgt) handlePass();
+                    else triggerFail(false);
+                }
+            },
+            {
+                id: 11, name: 'Behavioral Biometrics', desc: 'Hidden mouse tracker', prompt: 'Interact briefly to continue',
+                needsVerifyBtn: false, needsRefreshBtn: false,
+                setup: (container) => {
+                    let c = 0;
+                    let b = $$('button', 'btn'); b.innerText = "Continue"; b.disabled = true;
+                    let div = $$('div'); div.style.padding = '2rem'; div.style.background = 'rgba(0,0,0,0.2)'; div.style.borderRadius = '8px';
+                    div.innerText = "Move your cursor inside this box.";
+
+                    div.onpointermove = () => {
+                        c++;
+                        if (c > 20 && b.disabled) { b.disabled = false; div.innerText = "✓ Sufficient interaction recorded."; div.style.color = 'var(--success)'; }
+                    };
+                    b.onclick = () => handlePass();
+
+                    container.appendChild(div); container.appendChild($$('br')); container.appendChild(b);
+                }
+            },
+            {
+                id: 12, name: 'Escalation Ladder', desc: 'Progressive step-up', prompt: 'Level 1: Passive Check',
+                needsRefreshBtn: false,
+                setup: (container) => {
+                    activeChallenge.stage = 1;
+
+                    let s = $$('div');
+                    s.innerHTML = `<button id="st1-btn" class="btn">Start Check</button>`;
+                    container.appendChild(s);
+
+                    $('st1-btn').onclick = async () => {
+                        $('st1-btn').innerText = 'Checking...'; $('st1-btn').disabled = true;
+                        await wait(800);
+                        $('widget-prompt').innerText = 'High Risk Detected. Step-up required.';
+                        s.innerHTML = `<p style="margin-bottom:1rem;color:var(--danger)">Please solve this puzzle.</p>`;
+                        let a = randInt(1, 9), b = randInt(1, 9);
+                        activeChallenge.ans = (a + b).toString();
+                        s.innerHTML += `<div>What is ${a} + ${b}?</div><input type="number" id="st2-inp" style="margin-top:0.5rem" placeholder="Answer">`;
+                        activeChallenge.stage = 2;
+                    };
+                },
+                verify: () => {
+                    if (activeChallenge.stage === 1) return; // not ready
+                    if ($('st2-inp').value === activeChallenge.ans) handlePass(); else triggerFail(false);
+                }
+            }
+        ];
+
+        // INIT
+        loadState();
+        if (!state.currentLevel) renderMap(); else openLevel(state.currentLevel);
+
+    </script>
+</body>
+
+</html>
